@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>국내 카드사·은행 브랜드 검색기</title>
+  <meta name="description" content="국내 전업 카드사, 시중은행, 지방은행, 인터넷은행, 특수·협동 기관, 글로벌 브랜드의 고객센터 전화번호와 홈페이지를 한 번에 검색할 수 있습니다.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f4f6fb;
+      color: #222;
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* 헤더 */
+    .site-header {
+      background: #1b6ef3;
+      color: #fff;
+      padding: 28px 20px 24px;
+      text-align: center;
+    }
+    .site-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .site-header p {
+      font-size: 13px;
+      opacity: 0.85;
+      line-height: 1.7;
+    }
+
+    /* 본문 래퍼 */
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 24px 16px 0;
+    }
+
+    /* 검색창 */
+    .search-box {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(27,110,243,0.07);
+      padding: 20px 18px 16px;
+      margin-bottom: 16px;
+    }
+    .search-input-wrap {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .search-input-wrap input {
+      flex: 1;
+      border: 1.5px solid #d0dcff;
+      border-radius: 9px;
+      padding: 11px 16px;
+      font-size: 15px;
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #222;
+      outline: none;
+      background: #fafbff;
+      transition: border-color 0.15s;
+    }
+    .search-input-wrap input:focus {
+      border-color: #1b6ef3;
+      background: #fff;
+    }
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      font-size: 12px;
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1px solid #d0dcff;
+      background: #f4f6fb;
+      color: #555;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 400;
+      transition: all 0.13s;
+      white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: #1b6ef3; color: #1b6ef3; }
+    .filter-btn.active {
+      background: #1b6ef3;
+      color: #fff;
+      border-color: #1b6ef3;
+      font-weight: 700;
+    }
+
+    /* 결과 메타 */
+    .results-meta {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 12px;
+      min-height: 20px;
+      padding: 0 2px;
+    }
+
+    /* 카드 그리드 */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+    .brand-card {
+      background: #fff;
+      border: 1px solid #e4ecff;
+      border-radius: 12px;
+      padding: 15px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      transition: border-color 0.13s, box-shadow 0.13s;
+    }
+    .brand-card:hover {
+      border-color: #1b6ef3;
+      box-shadow: 0 2px 10px rgba(27,110,243,0.08);
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+      line-height: 1.4;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 2px;
+    }
+    .cat-badge {
+      font-size: 11px;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .cat-domestic  { background: #e8f0fe; color: #1a4fa3; }
+    .cat-city      { background: #e1f5ee; color: #085041; }
+    .cat-regional  { background: #eeedfe; color: #3c3489; }
+    .cat-special   { background: #faeeda; color: #633806; }
+    .cat-internet  { background: #eaf3de; color: #27500a; }
+    .cat-global    { background: #faece7; color: #712b13; }
+
+    .type-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .type-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      border: 1px solid #e0e8ff;
+      color: #777;
+      background: #f6f8ff;
+    }
+
+    .info-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 2px;
+      border-top: 1px solid #f2f4f8;
+      padding-top: 9px;
+    }
+    .info-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .info-label {
+      color: #bbb;
+      min-width: 34px;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+    .info-tel {
+      color: #111;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      font-size: 14px;
+    }
+    .info-note {
+      color: #bbb;
+      font-size: 12px;
+      font-style: italic;
+    }
+    .info-link {
+      color: #1b6ef3;
+      text-decoration: none;
+      font-size: 12px;
+      word-break: break-all;
+    }
+    .info-link:hover { text-decoration: underline; }
+
+    /* 플레이스홀더 / 빈 결과 */
+    .search-placeholder {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #ccc;
+    }
+    .search-placeholder .ph-icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .search-placeholder .ph-text {
+      font-size: 14px;
+      color: #bbb;
+      line-height: 1.8;
+    }
+    .search-empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    /* 안내 박스 */
+    .notice-box {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #795900;
+      line-height: 1.7;
+      margin-top: 14px;
+    }
+
+    /* 푸터 */
+    .site-footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 12px;
+      color: #bbb;
+      line-height: 1.8;
+    }
+    .site-footer a {
+      color: #1b6ef3;
+      text-decoration: none;
+    }
+    .site-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      .site-header h1 { font-size: 18px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .filter-btn { font-size: 11px; padding: 4px 10px; }
+      .search-input-wrap input { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>🏦 국내 카드사·은행 브랜드 검색기</h1>
+  <p>고객센터 전화번호 · 공식 홈페이지를 한 번에 확인하세요</p>
+</header>
+
+<div class="container">
+
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <input type="text" id="cardSearchInput" placeholder="카드사·은행 이름 또는 전화번호로 검색..." autocomplete="off" />
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all">전체</button>
+      <button class="filter-btn" data-filter="domestic">전업 카드사</button>
+      <button class="filter-btn" data-filter="city">시중은행</button>
+      <button class="filter-btn" data-filter="regional">지방은행</button>
+      <button class="filter-btn" data-filter="special">특수·협동</button>
+      <button class="filter-btn" data-filter="internet">인터넷은행</button>
+      <button class="filter-btn" data-filter="global">글로벌 브랜드</button>
+      <button class="filter-btn" data-filter="credit">신용카드 가능</button>
+      <button class="filter-btn" data-filter="check">체크카드 가능</button>
+    </div>
+  </div>
+
+  <div class="results-meta" id="cardResultsMeta"></div>
+  <div id="cardGrid"></div>
+
+  <div class="notice-box">
+    ⚠️ <strong>글로벌 브랜드(Visa·Mastercard·AMEX 등)</strong>는 결제망만 제공하는 회사입니다.<br>
+    카드 관련 문의는 실제 발급 카드사(신한·삼성·KB국민 등)로 연락하세요.
+  </div>
+
+  <footer class="site-footer">
+    <p>표집사의 터닝포인트 &nbsp;|&nbsp; <a href="https://pyobutler.tistory.com" target="_blank" rel="noopener">pyobutler.tistory.com</a></p>
+    <p style="margin-top:4px;">전화번호는 변경될 수 있으니 각 기관 공식 홈페이지에서 확인하세요.</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var DATA = [
+    { name: "삼성카드",      sub: "Samsung Card",              cat: "domestic",  types: ["신용","체크"], tel: "1588-8700", url: "https://www.samsungcard.com" },
+    { name: "현대카드",      sub: "Hyundai Card",              cat: "domestic",  types: ["신용"],        tel: "1577-6000", url: "https://www.hyundaicard.com" },
+    { name: "롯데카드",      sub: "Lotte Card",                cat: "domestic",  types: ["신용","체크"], tel: "1588-8100", url: "https://www.lottecard.co.kr" },
+    { name: "신한카드",      sub: "Shinhan Card",              cat: "domestic",  types: ["신용","체크"], tel: "1544-7000", url: "https://www.shinhancard.com" },
+    { name: "KB국민카드",    sub: "KB Kookmin Card",           cat: "domestic",  types: ["신용","체크"], tel: "1588-1688", url: "https://card.kbcard.com" },
+    { name: "하나카드",      sub: "Hana Card",                 cat: "domestic",  types: ["신용","체크"], tel: "1800-1111", url: "https://www.hanacard.co.kr" },
+    { name: "우리카드",      sub: "Woori Card",                cat: "domestic",  types: ["신용","체크"], tel: "1588-9955", url: "https://www.wooricard.com" },
+    { name: "BC카드",        sub: "BC Card (제휴 발급)",       cat: "domestic",  types: ["신용","체크"], tel: "1588-4000", url: "https://www.bccard.com" },
+
+    { name: "KB국민은행",    sub: "KB Kookmin Bank",           cat: "city",      types: ["체크"],        tel: "1588-9999", url: "https://www.kbstar.com" },
+    { name: "신한은행",      sub: "Shinhan Bank",              cat: "city",      types: ["체크"],        tel: "1599-8000", url: "https://www.shinhan.com" },
+    { name: "하나은행",      sub: "Hana Bank",                 cat: "city",      types: ["체크"],        tel: "1588-1111", url: "https://www.hanabank.com" },
+    { name: "우리은행",      sub: "Woori Bank",                cat: "city",      types: ["체크"],        tel: "1588-5000", url: "https://www.wooribank.com" },
+    { name: "SC제일은행",    sub: "Standard Chartered Korea",  cat: "city",      types: ["신용","체크"], tel: "1588-1599", url: "https://www.standardchartered.co.kr" },
+    { name: "씨티은행",      sub: "Citibank Korea",            cat: "city",      types: ["신용","체크"], tel: "1588-7000", url: "https://www.citibank.co.kr" },
+
+    { name: "IBK기업은행",   sub: "Industrial Bank of Korea",  cat: "special",   types: ["신용","체크"], tel: "1566-2566", url: "https://www.ibk.co.kr" },
+    { name: "NH농협은행",    sub: "NH NongHyup Bank",          cat: "special",   types: ["신용","체크"], tel: "1661-3000", url: "https://banking.nonghyup.com" },
+    { name: "NH농협카드",    sub: "NH NongHyup Card",          cat: "special",   types: ["신용","체크"], tel: "1644-4000", url: "https://card.nonghyup.com" },
+    { name: "수협은행",      sub: "Suhyup Bank",               cat: "special",   types: ["체크"],        tel: "1588-1515", url: "https://www.suhyup-bank.com" },
+    { name: "한국산업은행",  sub: "Korea Development Bank",    cat: "special",   types: ["체크"],        tel: "1588-1500", url: "https://www.kdb.co.kr" },
+    { name: "한국수출입은행",sub: "Korea Eximbank",            cat: "special",   types: [],              tel: "02-3779-6114", url: "https://www.koreaexim.go.kr" },
+    { name: "우체국예금",    sub: "Korea Post",                cat: "special",   types: ["체크"],        tel: "1588-1900", url: "https://www.epostbank.go.kr" },
+    { name: "새마을금고",    sub: "MG새마을금고",              cat: "special",   types: ["체크"],        tel: "1599-9000", url: "https://www.kfcc.co.kr" },
+    { name: "신협",          sub: "Credit Union",              cat: "special",   types: ["체크"],        tel: "1566-6000", url: "https://www.cu.co.kr" },
+
+    { name: "BNK부산은행",   sub: "BNK Busan Bank",           cat: "regional",  types: ["신용","체크"], tel: "1588-6200", url: "https://www.busanbank.co.kr" },
+    { name: "BNK경남은행",   sub: "BNK Kyongnam Bank",        cat: "regional",  types: ["신용","체크"], tel: "1600-0700", url: "https://www.knbank.co.kr" },
+    { name: "iM뱅크(대구은행)", sub: "iM Bank (구 DGB대구은행)", cat: "regional", types: ["신용","체크"], tel: "1588-5050", url: "https://www.imbank.co.kr" },
+    { name: "광주은행",      sub: "Gwangju Bank",              cat: "regional",  types: ["신용","체크"], tel: "1588-3388", url: "https://www.kjbank.com" },
+    { name: "전북은행",      sub: "Jeonbuk Bank",              cat: "regional",  types: ["신용","체크"], tel: "1588-4477", url: "https://www.jbbank.co.kr" },
+    { name: "제주은행",      sub: "Jeju Bank",                 cat: "regional",  types: ["체크"],        tel: "1588-0079", url: "https://www.jejubank.co.kr" },
+
+    { name: "케이뱅크",      sub: "K Bank",                   cat: "internet",  types: ["체크"],        tel: "1522-1000", url: "https://www.kbanknow.com" },
+    { name: "카카오뱅크",    sub: "Kakao Bank",               cat: "internet",  types: ["체크"],        tel: "1599-3333", url: "https://www.kakaobank.com" },
+    { name: "토스뱅크",      sub: "Toss Bank",                cat: "internet",  types: ["체크"],        tel: "1599-4000", url: "https://www.tossbank.com" },
+
+    { name: "Visa",          sub: "비자 (글로벌 결제망)",      cat: "global",    types: ["신용","체크"], tel: null, url: "https://www.visa.co.kr" },
+    { name: "Mastercard",    sub: "마스터카드 (글로벌 결제망)", cat: "global",   types: ["신용","체크"], tel: null, url: "https://www.mastercard.co.kr" },
+    { name: "아멕스 (AMEX)", sub: "American Express",         cat: "global",    types: ["신용"],        tel: null, url: "https://www.americanexpress.com/ko-kr" },
+    { name: "UnionPay",      sub: "은련카드 (중국)",           cat: "global",    types: ["신용","체크"], tel: null, url: "https://www.unionpayintl.com/kr" },
+    { name: "JCB",           sub: "Japan Credit Bureau",      cat: "global",    types: ["신용"],        tel: null, url: "https://www.jcb.co.jp/kr" }
+  ];
+
+  var catLabel = { domestic:"전업 카드사", city:"시중은행", regional:"지방은행", special:"특수·협동", internet:"인터넷은행", global:"글로벌 브랜드" };
+  var catClass = { domestic:"cat-domestic", city:"cat-city", regional:"cat-regional", special:"cat-special", internet:"cat-internet", global:"cat-global" };
+
+  var activeFilter = "all";
+  var searchQ = "";
+  var hasInteracted = false;
+
+  function render() {
+    var grid = document.getElementById("cardGrid");
+    var meta = document.getElementById("cardResultsMeta");
+
+    if (!hasInteracted) {
+      meta.textContent = "";
+      grid.className = "";
+      grid.innerHTML = '<div class="search-placeholder"><span class="ph-icon">🔍</span><div class="ph-text">카드사·은행 이름을 검색하거나<br>위 버튼으로 카테고리를 선택하세요.</div></div>';
+      return;
+    }
+
+    var list = DATA.filter(function (d) {
+      var q = searchQ.toLowerCase();
+      var matchQ = !q
+        || d.name.toLowerCase().indexOf(q) >= 0
+        || d.sub.toLowerCase().indexOf(q) >= 0
+        || (d.tel && d.tel.indexOf(q) >= 0);
+      var matchF = activeFilter === "all"
+        || (["domestic","city","regional","special","internet","global"].indexOf(activeFilter) >= 0 && d.cat === activeFilter)
+        || (activeFilter === "credit" && d.types.indexOf("신용") >= 0)
+        || (activeFilter === "check"  && d.types.indexOf("체크") >= 0);
+      return matchQ && matchF;
+    });
+
+    meta.textContent = "총 " + list.length + "개";
+
+    if (list.length === 0) {
+      grid.className = "";
+      grid.innerHTML = '<div class="search-empty">검색 결과가 없습니다.</div>';
+      return;
+    }
+
+    grid.className = "card-grid";
+    grid.innerHTML = list.map(function (d) {
+      var tags = d.types.length
+        ? '<div class="type-row">' + d.types.map(function(t){ return '<span class="type-tag">'+t+'카드</span>'; }).join("") + '</div>'
+        : '';
+      var telHtml = d.tel
+        ? '<span class="info-tel">' + d.tel + '</span>'
+        : '<span class="info-note">발급 카드사에 문의</span>';
+      return '<div class="brand-card">'
+        + '<div class="card-header">'
+        +   '<div><div class="brand-name">' + d.name + '</div><div class="brand-sub">' + d.sub + '</div></div>'
+        +   '<span class="cat-badge ' + catClass[d.cat] + '">' + catLabel[d.cat] + '</span>'
+        + '</div>'
+        + tags
+        + '<div class="info-row">'
+        +   '<div class="info-item"><span class="info-label">전화</span>' + telHtml + '</div>'
+        +   '<div class="info-item"><span class="info-label">홈피</span>'
+        +     '<a class="info-link" href="' + d.url + '" target="_blank" rel="noopener">'
+        +     d.url.replace("https://","") + '</a></div>'
+        + '</div>'
+        + '</div>';
+    }).join("");
+  }
+
+  document.getElementById("cardSearchInput").addEventListener("input", function (e) {
+    searchQ = e.target.value;
+    hasInteracted = searchQ.length > 0 || activeFilter !== "all";
+    render();
+  });
+
+  document.querySelectorAll(".filter-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".filter-btn").forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      activeFilter = btn.getAttribute("data-filter");
+      hasInteracted = activeFilter !== "all" || searchQ.length > 0;
+      render();
+    });
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
